@@ -2847,7 +2847,7 @@ namespace ACE.Server.Command.Handlers
             // Begin Godly Stats Increase
 
             var currentPlayer = session.Player;
-            currentPlayer.Level = 999;
+            currentPlayer.Level = 666;
             currentPlayer.AvailableExperience = 0;
             currentPlayer.AvailableSkillCredits = 0;
             currentPlayer.TotalExperience = 191226310247;

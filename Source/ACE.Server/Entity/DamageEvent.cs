@@ -331,6 +331,7 @@ namespace ACE.Server.Entity
             // get resistance modifiers
             WeaponResistanceMod = WorldObject.GetWeaponResistanceModifier(Weapon, attacker, attackSkill, DamageType);
 
+            float dmgmod = 1.0f;
             if (playerDefender != null)
             {
                 ResistanceMod = playerDefender.GetResistanceMod(DamageType, Attacker, Weapon, WeaponResistanceMod);
@@ -361,10 +362,93 @@ namespace ACE.Server.Entity
             // get shield modifier
             ShieldMod = defender.GetShieldMod(attacker, DamageType, Weapon);
 
-            // calculate final output damage
-            Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+            if (Weapon != null && attacker == playerAttacker && !(attacker is CombatPet))
+            {
+                var strength = attacker.Strength.Base;
+                var coord = attacker.Coordination.Base;
+                var quick = attacker.Quickness.Base;
 
-            DamageMitigated = DamageBeforeMitigation - Damage;
+                if (Weapon.WeaponSkill == Skill.LightWeapons)
+                {
+                    float modifier = (float)PropertyManager.GetDouble("attribute_bonus_light").Item;
+                    var lightAttributeBonus = 1.0f + ((strength + coord) * modifier);
+
+                    var olddmg = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+
+                    Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod * lightAttributeBonus;
+                    DamageMitigated = DamageBeforeMitigation - Damage;
+
+                    /*if (playerAttacker != null)
+                        playerAttacker.Session.Network.EnqueueSend(new GameMessageSystemChat($"[PHYSICAL] old {Math.Round(olddmg):N0} // new {Math.Round(Damage):N0} @ ATTRIBUTE BONUS ?{1.0 + ((strength + coord) * 0.0003f)} == {lightAttributeBonus}?", ChatMessageType.Broadcast));*/
+                }
+
+                if (Weapon.WeaponSkill == Skill.HeavyWeapons)
+                {
+                    float modifier = (float)PropertyManager.GetDouble("attribute_bonus_heavy").Item;
+                    var heavyAttributeBonus = 1.0f + ((strength + coord) * modifier);
+
+                    var olddmg = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+
+                    Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod * heavyAttributeBonus;
+                    DamageMitigated = DamageBeforeMitigation - Damage;
+
+                    /*if (playerAttacker != null)
+                        playerAttacker.Session.Network.EnqueueSend(new GameMessageSystemChat($"[PHYSICAL] old {Math.Round(olddmg):N0} // new {Math.Round(Damage):N0} @ ATTRIBUTE BONUS ?{1.0 + ((strength + coord) * 0.0002f)} == {heavyAttributeBonus}?", ChatMessageType.Broadcast));*/
+                }
+
+                if (Weapon.WeaponSkill == Skill.FinesseWeapons)
+                {
+                    float modifier = (float)PropertyManager.GetDouble("attribute_bonus_finesse").Item;
+                    var finesseAttributeBonus = 1.0f + ((quick + coord) * modifier);
+
+                    var olddmg = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+
+                    Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod * finesseAttributeBonus;
+                    DamageMitigated = DamageBeforeMitigation - Damage;
+
+                    /*if (playerAttacker != null)
+                        playerAttacker.Session.Network.EnqueueSend(new GameMessageSystemChat($"[PHYSICAL] old {Math.Round(olddmg):N0} // new {Math.Round(Damage):N0} @ ATTRIBUTE BONUS ?{1.0 + ((quick + coord) * 0.0004f)} == {finesseAttributeBonus}?", ChatMessageType.Broadcast));*/
+                }
+
+                if (Weapon.WeaponSkill == Skill.TwoHandedCombat)
+                {
+                    float modifier = (float)PropertyManager.GetDouble("attribute_bonus_twohand").Item;
+                    var twohandAttributeBonus = 1.0f + ((strength + coord) * modifier);
+
+                    var olddmg = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+
+                    Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod * twohandAttributeBonus;
+                    DamageMitigated = DamageBeforeMitigation - Damage;
+
+                    /*if (playerAttacker != null)
+                        playerAttacker.Session.Network.EnqueueSend(new GameMessageSystemChat($"[PHYSICAL] old {Math.Round(olddmg):N0} // new {Math.Round(Damage):N0} @ ATTRIBUTE BONUS ?{1.0 + ((strength + coord) * 0.0002f)} == {twohandAttributeBonus}?", ChatMessageType.Broadcast));*/
+                }
+
+                if (Weapon.WeaponSkill == Skill.MissileWeapons)
+                {
+                    float modifier = (float)PropertyManager.GetDouble("attribute_bonus_missile").Item;
+                    var missileAttributeBonus = 1.0f + (coord * modifier);
+
+                    var olddmg = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+
+                    Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod * missileAttributeBonus;
+                    DamageMitigated = DamageBeforeMitigation - Damage;
+
+                    /*if (playerAttacker != null)
+                        playerAttacker.Session.Network.EnqueueSend(new GameMessageSystemChat($"[PHYSICAL] old {Math.Round(olddmg):N0} // new {Math.Round(Damage):N0} @ ATTRIBUTE BONUS ?{1.0 + (coord * 0.00002f)} == {missileAttributeBonus}?", ChatMessageType.Broadcast));*/
+                }
+            }
+            else
+            {
+                // calculate final output damage
+                Damage = (DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod) * dmgmod;
+                DamageMitigated = DamageBeforeMitigation - Damage;
+
+                var normaldmg = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+
+                /*if (playerDefender != null)
+                    playerDefender.Session.Network.EnqueueSend(new GameMessageSystemChat($"[PHYSICAL] new {Math.Round(Damage):N0} // old {Math.Round(normaldmg):N0}", ChatMessageType.Broadcast));*/
+            }
 
             return Damage;
         }

@@ -128,21 +128,31 @@ namespace ACE.Server.WorldObjects.Managers
                     min = emote.Min64 ?? emote.Min ?? 0;
                     max = emote.Max64 ?? emote.Max ?? 0;
 
-                    if (player != null)
-                        player.GrantLevelProportionalXp(emote.Percent ?? 0, min, max);
+                    if (WorldObject.WeenieClassId == 9495 || WorldObject.WeenieClassId == 9496 || WorldObject.WeenieClassId == 9497)
+                    {
+                        max = 1000000L;
+
+                        if (player != null)
+                            player.GrantLevelProportionalXp(emote.Percent ?? 0, min, max);
+                    }
+                    else
+                    {
+                        if (player != null)
+                            player.GrantLevelProportionalXp(emote.Percent ?? 0, min, max);
+                    }
                     break;
 
                 case EmoteType.AwardLuminance:
 
                     if (player != null)
-                        player.EarnLuminance(emote.HeroXP64 ?? 0, XpType.Quest, ShareType.None);
+                        player.EarnLuminance(emote.HeroXP64 ?? 0, XpType.Quest, ShareType.Fellowship);
 
                     break;
 
                 case EmoteType.AwardNoShareXP:
 
                     if (player != null)
-                        player.EarnXP(emote.Amount64 ?? emote.Amount ?? 0, XpType.Quest, ShareType.None);
+                        player.EarnXP(emote.Amount64 ?? emote.Amount ?? 0, XpType.Quest, ShareType.Fellowship);
 
                     break;
 

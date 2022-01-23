@@ -196,16 +196,16 @@ namespace ACE.Server.Managers
             var skill = player.GetCreatureSkill(recipeSkill);
 
             // tinkering skill must be trained
-            if (skill.AdvancementClass < SkillAdvancementClass.Trained)
+            /*if (skill.AdvancementClass < SkillAdvancementClass.Trained)
             {
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You are not trained in {skill.Skill.ToSentence()}.", ChatMessageType.Broadcast));
                 return null;
-            }
+            }*/
 
             // thanks to Endy's Tinkering Calculator for this formula!
             var attemptMod = TinkeringDifficulty[tinkeredCount];
 
-            var difficulty = (int)Math.Floor(((salvageMod * 5.0f) + (itemWorkmanship * salvageMod * 2.0f) - (toolWorkmanship * workmanshipMod * salvageMod / 5.0f)) * attemptMod);
+            var difficulty = (int)Math.Floor(((salvageMod * 5.0f) + (itemWorkmanship * salvageMod * 2.0f) - (toolWorkmanship * workmanshipMod * salvageMod / 5f)) * attemptMod);
 
             var playerCurrentPlusLumAugSkilledCraft = skill.Current + (uint)player.LumAugSkilledCraft;
 
@@ -219,7 +219,7 @@ namespace ACE.Server.Managers
                 if (player.AugmentationBonusImbueChance > 0)
                     successChance += player.AugmentationBonusImbueChance * 0.05f;
             }
-
+            else { successChance = 1.0; }
             // todo: remove this once foolproof salvage recipes are updated
             if (foolproofTinkers.Contains((WeenieClassName)tool.WeenieClassId))
                 successChance = 1.0;
@@ -286,15 +286,15 @@ namespace ACE.Server.Managers
         {
             // attempt #
             1.0f,   // 1
-            1.1f,   // 2
-            1.3f,   // 3
-            1.6f,   // 4
-            2.0f,   // 5
-            2.5f,   // 6
-            3.0f,   // 7
-            3.5f,   // 8
-            4.0f,   // 9
-            4.5f    // 10
+            1.0f,   // 2
+            1.0f,   // 3
+            1.0f,   // 4
+            1.0f,   // 5
+            1.0f,   // 6
+            1.0f,   // 7
+            1.0f,   // 8
+            1.0f,   // 9
+            1.0f    // 10
         };
 
         public static void ShowDialog(Player player, WorldObject source, WorldObject target, Recipe recipe, double successChance)

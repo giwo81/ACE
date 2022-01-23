@@ -23,7 +23,7 @@ namespace ACE.Server.Entity
         /// <summary>
         /// The maximum # of fellowship members
         /// </summary>
-        public static int MaxFellows = 9;
+        public static int MaxFellows = 13;
 
         public string FellowshipName;
         public uint FellowshipLeaderGuid;
@@ -148,7 +148,7 @@ namespace ACE.Server.Entity
                 return;
             }
 
-            if (FellowshipMembers.Count == 9)
+            if (FellowshipMembers.Count == 13)
             {
                 inviter.Session.Network.EnqueueSend(new GameEventWeenieError(inviter.Session, WeenieError.YourFellowshipIsFull));
                 return;
@@ -605,27 +605,35 @@ namespace ACE.Server.Entity
                 case 1:
                     return 1.0;
                 case 2:
-                    return .75;
+                    return .95;
                 case 3:
-                    return .6;
+                    return .9;
                 case 4:
-                    return .55;
+                    return .85;
                 case 5:
-                    return .5;
+                    return .8;
                 case 6:
-                    return .45;
+                    return .75;
                 case 7:
-                    return .4;
+                    return .7;
                 case 8:
-                    return .35;
+                    return .65;
                 case 9:
-                    return .3;
+                    return .6;
+                case 10:
+                    return .55;
+                case 11:
+                    return .5;
+                case 12:
+                    return .5;
+                case 13:
+                    return .5;
                     // TODO: handle fellowship mods with > 9 players?
             }
             return 1.0;
         }
 
-        public static readonly int MaxDistance = 600;
+        public static readonly int MaxDistance = 3600;
 
         /// <summary>
         /// Returns the amount to scale the XP for a fellow

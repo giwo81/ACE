@@ -550,7 +550,7 @@ namespace ACE.Server.Managers
                 ("fastbuff", new Property<bool>(true, "If TRUE, enables the fast buffing trick from retail.")),
                 ("fellow_busy_no_recruit", new Property<bool>(true, "if FALSE, fellows can be recruited while they are busy, different from retail")),
                 ("fellow_kt_killer", new Property<bool>(true, "if FALSE, fellowship kill tasks will share with the fellowship, even if the killer doesn't have the quest")),
-                ("fellow_kt_landblock", new Property<bool>(false, "if TRUE, fellowship kill tasks will share with landblock range (192 distance radius, or entire dungeon)")),
+                ("fellow_kt_landblock", new Property<bool>(true, "if TRUE, fellowship kill tasks will share with landblock range (192 distance radius, or entire dungeon)")),
                 ("fellow_quest_bonus", new Property<bool>(false, "if TRUE, applies EvenShare formula to fellowship quest reward XP (300% max bonus, defaults to false in retail)")),
                 ("gateway_ties_summonable", new Property<bool>(true, "if disabled, players cannot summon ties from gateways. defaults to enabled, as in retail")),
                 ("house_15day_account", new Property<bool>(true, "if disabled, houses can be purchased with accounts created less than 15 days old")),
@@ -659,7 +659,15 @@ namespace ACE.Server.Managers
                 ("vitae_penalty", new Property<double>(0.05, "the amount of vitae penalty a player gets per death")),
                 ("vitae_penalty_max", new Property<double>(0.40, "the maximum vitae penalty a player can have")),
                 ("void_pvp_modifier", new Property<double>(0.5, "Scales the amount of damage players take from Void Magic. Defaults to 0.5, as per retail. For earlier content where DRR isn't as readily available, this can be adjusted for balance.")),
-                ("xp_modifier", new Property<double>(1.0, "scales the amount of xp received by players"))
+                ("xp_modifier", new Property<double>(1.0, "scales the amount of xp received by players")),
+                ("attribute_bonus_twohand", new Property<double>(0.001, "scales the amount of bonus damage granted by Attributes for the Two Handed Weapons skill")),
+                ("attribute_bonus_heavy", new Property<double>(0.001, "scales the amount of bonus damage granted by Attributes for the Heavy Weapons skill")),
+                ("attribute_bonus_light", new Property<double>(0.001, "scales the amount of bonus damage granted by Attributes for the Light Weapons skill")),
+                ("attribute_bonus_finesse", new Property<double>(0.001, "scales the amount of bonus damage granted by Attributes for the Finesse Weapons skill")),
+                ("attribute_bonus_missile", new Property<double>(0.001, "scales the amount of bonus damage granted by Attributes for the Missile Weapons skill")),
+                ("attribute_bonus_war", new Property<double>(0.001, "scales the amount of bonus damage granted by Attributes for the War Magic skill")),
+                ("attribute_bonus_void", new Property<double>(0.001, "scales the amount of bonus damage granted by Attributes for the Void Magic skill")),
+                ("summons_bonus_mod", new Property<double>(0.001, "scales the amount of bonus Summons attributes granted by the Players Self and Endurance"))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

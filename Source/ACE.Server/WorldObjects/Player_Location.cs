@@ -100,7 +100,7 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is recalling home.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.HouseRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.HouseRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
 
@@ -108,8 +108,8 @@ namespace ACE.Server.WorldObjects
             var actionChain = new ActionChain();
 
             // Then do teleport
-            var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.HouseRecall);
-            actionChain.AddDelaySeconds(animLength);
+            //var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.HouseRecall);
+            actionChain.AddDelaySeconds(1);
             IsBusy = true;
             actionChain.AddAction(this, () =>
             {
@@ -168,7 +168,7 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is recalling to the lifestone.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.LifestoneRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.LifestoneRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
 
@@ -177,7 +177,7 @@ namespace ACE.Server.WorldObjects
 
             // Then do teleport
             IsBusy = true;
-            lifestoneChain.AddDelaySeconds(DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.LifestoneRecall));
+            lifestoneChain.AddDelaySeconds(1);
             lifestoneChain.AddAction(this, () =>
             {
                 IsBusy = false;
@@ -226,7 +226,7 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is recalling to the marketplace.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.MarketplaceRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.MarketplaceRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
 
@@ -234,7 +234,7 @@ namespace ACE.Server.WorldObjects
             // float mpAnimationLength = MotionTable.GetAnimationLength((uint)MotionTableId, MotionCommand.MarketplaceRecall);
             // mpChain.AddDelaySeconds(mpAnimationLength);
             ActionChain mpChain = new ActionChain();
-            mpChain.AddDelaySeconds(14);
+            mpChain.AddDelaySeconds(1);
 
             // Then do teleport
             IsBusy = true;
@@ -293,7 +293,7 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is going to the Allegiance hometown.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.AllegianceHometownRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.AllegianceHometownRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
 
@@ -303,7 +303,7 @@ namespace ACE.Server.WorldObjects
             // Then do teleport
             IsBusy = true;
             var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.AllegianceHometownRecall);
-            actionChain.AddDelaySeconds(animLength);
+            actionChain.AddDelaySeconds(1);
             actionChain.AddAction(this, () =>
             {
                 IsBusy = false;
@@ -381,7 +381,7 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is recalling to the Allegiance housing.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.HouseRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.HouseRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
 
@@ -390,7 +390,7 @@ namespace ACE.Server.WorldObjects
 
             // Then do teleport
             var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.HouseRecall);
-            actionChain.AddDelaySeconds(animLength);
+            actionChain.AddDelaySeconds(1);
 
             IsBusy = true;
             actionChain.AddAction(this, () =>
@@ -827,6 +827,7 @@ namespace ACE.Server.WorldObjects
             0x5963,     // Gauntlet Arena Two (Eldritch Web)
             0x5964,     // Gauntlet Arena One (Radiant Blood)
             0x5965,     // Gauntlet Arena Two (Radiant Blood)
+            0x01C4,     // Thasali Custom PKL area
         };
 
         /// <summary>

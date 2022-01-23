@@ -96,7 +96,7 @@ namespace ACE.Server.Entity
                         var spellDuration = equip ? double.PositiveInfinity : spell.Duration;
 
                         if (!equip && caster is Player player && player.AugmentationIncreasedSpellDuration > 0)
-                            spellDuration *= 1.0f + player.AugmentationIncreasedSpellDuration * 0.2f;
+                            spellDuration *= 1.0f + player.AugmentationIncreasedSpellDuration * 1.0f;
 
                         var entryDuration = entry.Duration == -1 ? double.PositiveInfinity : entry.Duration;
 

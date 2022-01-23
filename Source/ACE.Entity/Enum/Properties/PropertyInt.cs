@@ -629,6 +629,23 @@ namespace ACE.Entity.Enum.Properties
         /// </summary>
         [ServerOnly]
         InventoryOrder                          = 9015,
+        [ServerOnly]
+        RaisedStr                               = 9016,
+        [ServerOnly]
+        RaisedEnd                               = 9017,
+        [ServerOnly]
+        RaisedCoord                             = 9018,
+        [ServerOnly]
+        RaisedQuick                             = 9019,
+        [ServerOnly]
+        RaisedFocus                             = 9020,
+        [ServerOnly]
+        RaisedSelf                              = 9021,
+        [ServerOnly]
+        SlayerAdded                             = 9022,
+        [ServerOnly]
+        LastLevel                               = 9023
+
     }
 
     public static class PropertyIntExtensions

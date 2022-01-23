@@ -557,6 +557,32 @@ namespace ACE.Server.WorldObjects
                 finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod;
             }
 
+            if (sourceCreature == sourcePlayer)
+            {
+                if (sourceCreature != null)
+                {
+                    var focus = sourceCreature.Focus.Base;
+                    var will = sourceCreature.Self.Base;
+
+                    float attributeBonusDamage;
+                    if (Spell.DamageType == DamageType.Nether)
+                    {
+                        float modifier = (float)PropertyManager.GetDouble("attribute_bonus_void").Item;
+                        attributeBonusDamage = 1.0f + ((focus + will) * modifier);
+                    }
+                    else
+                    {
+                        float modifier = (float)PropertyManager.GetDouble("attribute_bonus_war").Item;
+                        attributeBonusDamage = 1.0f + ((focus + will) * modifier);
+                    }    
+
+                    var olddmg = finalDamage;
+
+                    finalDamage *= attributeBonusDamage;
+                }
+                /*if (sourcePlayer != null)
+                    sourcePlayer.Session.Network.EnqueueSend(new GameMessageSystemChat($"[MAGICAL] old {Math.Round(olddmg):N0} // new {finalDamage:N0} @ ATTRIBUTE BONUS ?{1.0 + ((focus + will) * 0.0003f)} == {attributeBonusDamage}?", ChatMessageType.Broadcast));*/
+            }
             // show debug info
             if (sourceCreature != null && sourceCreature.DebugDamage.HasFlag(Creature.DebugDamageType.Attacker))
             {
