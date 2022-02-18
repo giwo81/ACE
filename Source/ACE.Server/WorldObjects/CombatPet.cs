@@ -69,7 +69,7 @@ namespace ACE.Server.WorldObjects
 
                         var roundedAmount = Math.Round(byAmount);
 
-                        var finalBonus = (uint)roundedAmount * (uint)(3 * roundedAmount);
+                        var finalBonus = (uint)roundedAmount;
 
 
                         Strength.StartingValue += finalBonus;
