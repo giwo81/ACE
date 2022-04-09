@@ -1779,6 +1779,12 @@ namespace ACE.Server.WorldObjects.Managers
         {
             var result = message;
 
+            if (result == null)
+            {
+                log.Warn($"[EMOTE] {WorldObject.Name}.EmoteManager.Replace(message, {source.Name}:0x{source.Guid}:{source.WeenieClassId}, {target.Name}:0x{target.Guid}:{target.WeenieClassId}, {quest}): message was null!");
+                return "";
+            }
+
             var sourceName = source != null ? source.Name : "";
             var targetName = target != null ? target.Name : "";
 
