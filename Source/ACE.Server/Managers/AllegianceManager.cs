@@ -276,8 +276,12 @@ namespace ACE.Server.Managers
             var factor1 = direct ? 50.0f : 16.0f;
             var factor2 = direct ? 22.5f : 8.0f;
 
-            var generated = (factor1 + factor2 * (loyalty / SkillCap) * (1.0f + (timeReal / RealCap) * (timeGame / GameCap))) * 0f;
-            var received = (factor1 + factor2 * (leadership / SkillCap) * (1.0f + vassalFactor * (timeRealAvg / RealCap) * (timeGameAvg / GameCap))) * 0f;
+            bool disablePassup = PropertyManager.GetBool("passup_disabled").Item;
+
+            var multiplier = (disablePassup ? 0f : 0.01f);
+
+            var generated = (factor1 + factor2 * (loyalty / SkillCap) * (1.0f + (timeReal / RealCap) * (timeGame / GameCap))) * multiplier;
+            var received = (factor1 + factor2 * (leadership / SkillCap) * (1.0f + vassalFactor * (timeRealAvg / RealCap) * (timeGameAvg / GameCap))) * multiplier;
             var passup = generated * received;
 
             var generatedAmount = (uint)(amount * generated);
