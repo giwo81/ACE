@@ -50,14 +50,15 @@ namespace ACE.Server.Command.Handlers
 
         private static long CalculateAttributeCost(ref int amt, int currentAmt, long availableXp, bool max)
         {
-            long attrcost;
-            long multiamount = 0L;
+            ulong maxLong = 9223372036854775807;
+            ulong attrcost;
+            ulong multiamount = 0UL;
             var attrCostEthereal = currentAmt;
 
             for (var i = 1; i <= amt || max; i++)
             {
-                attrcost = (long)Math.Round(500000000D * Math.Pow((1D + (attrCostEthereal / 125D)), 3D));
-                if (max && (multiamount + attrcost) > availableXp)
+                attrcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (attrCostEthereal / 125D)), 3D));
+                if (((multiamount + attrcost) > maxLong) || (max && (long)(multiamount + attrcost) > availableXp))
                 {
                     amt = i - 1;
                     break;
@@ -66,7 +67,7 @@ namespace ACE.Server.Command.Handlers
                 multiamount += attrcost;
                 attrCostEthereal++;
             }
-            return multiamount;
+            return (long)multiamount;
         }
 
         [CommandHandler("raise", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Raise attributes over max.")]
