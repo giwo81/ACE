@@ -48,12 +48,43 @@ namespace ACE.Server.Command.Handlers
                 return;
         }
 
+        private static long CalculateAttributeCost(ref int amt, int currentAmt, long availableXp, bool max)
+        {
+            long attrcost;
+            long multiamount = 0L;
+            var attrCostEthereal = currentAmt;
+
+            for (var i = 1; i <= amt || max; i++)
+            {
+                attrcost = (long)Math.Round(500000000D * Math.Pow((1D + (attrCostEthereal / 125D)), 3D));
+                if (max && (multiamount + attrcost) > availableXp)
+                {
+                    amt = i - 1;
+                    break;
+                }
+
+                multiamount += attrcost;
+                attrCostEthereal++;
+            }
+            return multiamount;
+        }
+
         [CommandHandler("raise", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Raise attributes over max.")]
         public static void HandleAttribute(Session session, params string[] parameters)
         {
             var amt = 1;
+            bool max = false;
             if (parameters.Length > 1)
-                int.TryParse(parameters[1], out amt);
+            {
+                if (parameters[1].Equals("max", StringComparison.OrdinalIgnoreCase))
+                {
+                    max = true;
+                }
+                else
+                {
+                    int.TryParse(parameters[1], out amt);
+                }
+            }
 
             if (parameters[0].Equals("str", StringComparison.OrdinalIgnoreCase))
             {
@@ -65,57 +96,33 @@ namespace ACE.Server.Command.Handlers
                     return;
                 }
 
-                double strcost = 0;
-                var multiamount = 0UL;
-                var strCostEthereal = session.Player.RaisedStr;
+                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedStr, session.Player.AvailableExperience ?? 0, max);
 
-                if (amt > 1)
+                if (session.Player.AvailableExperience < xpCost || amt == 0)
                 {
-                    for (var i = 0; i < amt; i++)
+                    if (amt > 1)
                     {
-                        strcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (strCostEthereal / 125D)), 3D));
-                        multiamount += (ulong)strcost;
-                        strCostEthereal++;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Strength up {amt} times. ", ChatMessageType.Broadcast));
                     }
-                }
-                else
-                    strcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (strCostEthereal / 125D)), 3D));
-
-                if (session.Player.AvailableExperience < (long?)multiamount && amt > 1)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Strength up {amt} times. ", ChatMessageType.Broadcast));
-                    return;
-                }
-                else if (session.Player.AvailableExperience < strcost)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Strength up. ", ChatMessageType.Broadcast));
+                    else
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Strength up. ", ChatMessageType.Broadcast));
+                    }
                     return;
                 }
 
-                if (amt > 1)
-                {
-                    session.Player.RaisedStr += amt;
-                    str.StartingValue += (uint)amt;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)multiamount;
-                }
-                else
-                {
-                    session.Player.RaisedStr++;
-                    str.StartingValue += 1;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)strcost;
-                }
+                session.Player.RaisedStr += amt;
+                str.StartingValue += (uint)amt;
+                session.Player.AvailableExperience -= xpCost;
 
 
                 session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
                 session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Strength));
 
-                if (amt > 1)
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Strength to {str.Base}! XP spent {multiamount:N0}", ChatMessageType.Advancement));
-                else
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Strength to {str.Base}! XP spent {strcost:N0}", ChatMessageType.Advancement));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Strength to {str.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
             }
 
-            if (parameters[0].Equals("end", StringComparison.OrdinalIgnoreCase))
+            else if (parameters[0].Equals("end", StringComparison.OrdinalIgnoreCase))
             {
                 var end = session.Player.Endurance;
 
@@ -125,57 +132,33 @@ namespace ACE.Server.Command.Handlers
                     return;
                 }
 
-                double endcost = 0;
-                var multiamount = 0UL;
-                var endCostEthereal = session.Player.RaisedEnd;
+                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedEnd, session.Player.AvailableExperience ?? 0, max);
 
-                if (amt > 1)
+                if (session.Player.AvailableExperience < xpCost || amt == 0)
                 {
-                    for (var i = 0; i < amt; i++)
+                    if (amt > 1)
                     {
-                        endcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (endCostEthereal / 125D)), 3D));
-                        multiamount += (ulong)endcost;
-                        endCostEthereal++;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Endurance up {amt} times. ", ChatMessageType.Broadcast));
                     }
-                }
-                else
-                    endcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (endCostEthereal / 125D)), 3D));
-
-                if (session.Player.AvailableExperience < (long?)multiamount && amt > 1)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Endurance up {amt} times. ", ChatMessageType.Broadcast));
-                    return;
-                }
-                else if (session.Player.AvailableExperience < endcost)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Endurance up. ", ChatMessageType.Broadcast));
+                    else
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Endurance up. ", ChatMessageType.Broadcast));
+                    }
                     return;
                 }
 
-                if (amt > 1)
-                {
-                    session.Player.RaisedEnd += amt;
-                    end.StartingValue += (uint)amt;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)multiamount;
-                }
-                else
-                {
-                    session.Player.RaisedEnd++;
-                    end.StartingValue += 1;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)endcost;
-                }
+                session.Player.RaisedEnd += amt;
+                end.StartingValue += (uint)amt;
+                session.Player.AvailableExperience -= xpCost;
 
 
                 session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
                 session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Endurance));
 
-                if (amt > 1)
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Endurance to {end.Base}! XP spent {multiamount:N0}", ChatMessageType.Advancement));
-                else
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Endurance to {end.Base}! XP spent {endcost:N0}", ChatMessageType.Advancement));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Endurance to {end.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
             }
 
-            if (parameters[0].Equals("coord", StringComparison.OrdinalIgnoreCase))
+            else if (parameters[0].Equals("coord", StringComparison.OrdinalIgnoreCase))
             {
                 var coord = session.Player.Coordination;
 
@@ -185,57 +168,33 @@ namespace ACE.Server.Command.Handlers
                     return;
                 }
 
-                double coordcost = 0;
-                var multiamount = 0UL;
-                var coordCostEthereal = session.Player.RaisedCoord;
+                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedCoord, session.Player.AvailableExperience ?? 0, max);
 
-                if (amt > 1)
+                if (session.Player.AvailableExperience < xpCost || amt == 0)
                 {
-                    for (var i = 0; i < amt; i++)
+                    if (amt > 1)
                     {
-                        coordcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (coordCostEthereal / 125D)), 3D));
-                        multiamount += (ulong)coordcost;
-                        coordCostEthereal++;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Coordination up {amt} times. ", ChatMessageType.Broadcast));
                     }
-                }
-                else
-                    coordcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (coordCostEthereal / 125D)), 3D));
-
-                if (session.Player.AvailableExperience < (long?)multiamount && amt > 1)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Coordination up {amt} times. ", ChatMessageType.Broadcast));
-                    return;
-                }
-                else if (session.Player.AvailableExperience < coordcost)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Coordination up. ", ChatMessageType.Broadcast));
+                    else
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Coordination up. ", ChatMessageType.Broadcast));
+                    }
                     return;
                 }
 
-                if (amt > 1)
-                {
-                    session.Player.RaisedCoord += amt;
-                    coord.StartingValue += (uint)amt;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)multiamount;
-                }
-                else
-                {
-                    session.Player.RaisedCoord++;
-                    coord.StartingValue += 1;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)coordcost;
-                }
+                session.Player.RaisedCoord += amt;
+                coord.StartingValue += (uint)amt;
+                session.Player.AvailableExperience -= xpCost;
 
 
                 session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
                 session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Coordination));
 
-                if (amt > 1)
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Coordination to {coord.Base}! XP spent {multiamount:N0}", ChatMessageType.Advancement));
-                else
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Coordination to {coord.Base}! XP spent {coordcost:N0}", ChatMessageType.Advancement));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Coordination to {coord.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
             }
 
-            if (parameters[0].Equals("quick", StringComparison.OrdinalIgnoreCase))
+            else if (parameters[0].Equals("quick", StringComparison.OrdinalIgnoreCase))
             {
                 var quick = session.Player.Quickness;
 
@@ -245,57 +204,33 @@ namespace ACE.Server.Command.Handlers
                     return;
                 }
 
-                double quickcost = 0;
-                var multiamount = 0UL;
-                var quickCostEthereal = session.Player.RaisedQuick;
+                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedQuick, session.Player.AvailableExperience ?? 0, max);
 
-                if (amt > 1)
+                if (session.Player.AvailableExperience < xpCost || amt == 0)
                 {
-                    for (var i = 0; i < amt; i++)
+                    if (amt > 1)
                     {
-                        quickcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (quickCostEthereal / 125D)), 3D));
-                        multiamount += (ulong)quickcost;
-                        quickCostEthereal++;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Quickness up {amt} times. ", ChatMessageType.Broadcast));
                     }
-                }
-                else
-                    quickcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (quickCostEthereal / 125D)), 3D));
-
-                if (session.Player.AvailableExperience < (long?)multiamount && amt > 1)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Quickness up {amt} times. ", ChatMessageType.Broadcast));
-                    return;
-                }
-                else if (session.Player.AvailableExperience < quickcost)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Quickness up. ", ChatMessageType.Broadcast));
+                    else
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Quickness up. ", ChatMessageType.Broadcast));
+                    }
                     return;
                 }
 
-                if (amt > 1)
-                {
-                    session.Player.RaisedQuick += amt;
-                    quick.StartingValue += (uint)amt;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)multiamount;
-                }
-                else
-                {
-                    session.Player.RaisedQuick++;
-                    quick.StartingValue += 1;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)quickcost;
-                }
+                session.Player.RaisedQuick += amt;
+                quick.StartingValue += (uint)amt;
+                session.Player.AvailableExperience -= xpCost;
 
 
                 session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
                 session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Quickness));
 
-                if (amt > 1)
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Quickness to {quick.Base}! XP spent {multiamount:N0}", ChatMessageType.Advancement));
-                else
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Quickness to {quick.Base}! XP spent {quickcost:N0}", ChatMessageType.Advancement));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Quickness to {quick.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
             }
 
-            if (parameters[0].Equals("focus", StringComparison.OrdinalIgnoreCase))
+            else if (parameters[0].Equals("focus", StringComparison.OrdinalIgnoreCase))
             {
                 var focus = session.Player.Focus;
 
@@ -305,58 +240,34 @@ namespace ACE.Server.Command.Handlers
                     return;
                 }
 
-                double focuscost = 0;
-                var multiamount = 0UL;
-                var focusCostEthereal = session.Player.RaisedFocus;
+                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedFocus, session.Player.AvailableExperience ?? 0, max);
 
-                if (amt > 1)
+                if (session.Player.AvailableExperience < xpCost || amt == 0)
                 {
-                    for (var i = 0; i < amt; i++)
+                    if (amt > 1)
                     {
-                        focuscost = (ulong)Math.Round(500000000D * Math.Pow((1D + (focusCostEthereal / 125D)), 3D));
-                        multiamount += (ulong)focuscost;
-                        focusCostEthereal++;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Focus up {amt} times. ", ChatMessageType.Broadcast));
                     }
-                }
-                else
-                    focuscost = (ulong)Math.Round(500000000D * Math.Pow((1D + (focusCostEthereal / 125D)), 3D));
-
-                if (session.Player.AvailableExperience < (long?)multiamount && amt > 1)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Focus up {amt} times. ", ChatMessageType.Broadcast));
-                    return;
-                }
-                else if (session.Player.AvailableExperience < focuscost)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Focus up. ", ChatMessageType.Broadcast));
+                    else
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Focus up. ", ChatMessageType.Broadcast));
+                    }
                     return;
                 }
 
-                if (amt > 1)
-                {
-                    session.Player.RaisedFocus += amt;
-                    focus.StartingValue += (uint)amt;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)multiamount;
-                }
-                else
-                {
-                    session.Player.RaisedFocus++;
-                    focus.StartingValue += 1;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)focuscost;
-                }
+                session.Player.RaisedFocus += amt;
+                focus.StartingValue += (uint)amt;
+                session.Player.AvailableExperience -= xpCost;
 
 
                 session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
                 session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Focus));
 
-                if (amt > 1)
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Focus to {focus.Base}! XP spent {multiamount:N0}", ChatMessageType.Advancement));
-                else
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Focus to {focus.Base}! XP spent {focuscost:N0}", ChatMessageType.Advancement));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Focus to {focus.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
             }
 
 
-            if (parameters[0].Equals("self", StringComparison.OrdinalIgnoreCase))
+            else if (parameters[0].Equals("self", StringComparison.OrdinalIgnoreCase))
             {
                 var self = session.Player.Self;
 
@@ -366,61 +277,36 @@ namespace ACE.Server.Command.Handlers
                     return;
                 }
 
-                double selfcost = 0;
-                var multiamount = 0UL;
-                var selfCostEthereal = session.Player.RaisedSelf;
+                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedSelf, session.Player.AvailableExperience ?? 0, max);
 
-                if (amt > 1)
+                if (session.Player.AvailableExperience < xpCost || amt == 0)
                 {
-                    for (var i = 0; i < amt; i++)
+                    if (amt > 1)
                     {
-                        selfcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (selfCostEthereal / 125D)), 3D));
-                        multiamount += (ulong)selfcost;
-                        selfCostEthereal++;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Self up {amt} times. ", ChatMessageType.Broadcast));
                     }
-                }
-                else
-                    selfcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (selfCostEthereal / 125D)), 3D));
-
-                if (session.Player.AvailableExperience < (long?)multiamount && amt > 1)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Self up {amt} times. ", ChatMessageType.Broadcast));
-                    return;
-                }
-                else if (session.Player.AvailableExperience < selfcost)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Self up. ", ChatMessageType.Broadcast));
+                    else
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Self up. ", ChatMessageType.Broadcast));
+                    }
                     return;
                 }
 
-                if (amt > 1)
-                {
-                    session.Player.RaisedSelf += amt;
-                    self.StartingValue += (uint)amt;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)multiamount;
-                }
-                else
-                {
-                    session.Player.RaisedSelf++;
-                    self.StartingValue += 1;
-                    session.Player.AvailableExperience = session.Player.AvailableExperience - (long?)selfcost;
-                }
+                session.Player.RaisedSelf += amt;
+                self.StartingValue += (uint)amt;
+                session.Player.AvailableExperience -= xpCost;
 
 
                 session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
                 session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Self));
 
-                if (amt > 1)
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Self to {self.Base}! XP spent {multiamount:N0}", ChatMessageType.Advancement));
-                else
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Self to {self.Base}! XP spent {selfcost:N0}", ChatMessageType.Advancement));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Self to {self.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
             }
 
-            if (parameters[0].Equals("str", StringComparison.OrdinalIgnoreCase) && parameters[0].Equals("end", StringComparison.OrdinalIgnoreCase) && parameters[0].Equals("coord", StringComparison.OrdinalIgnoreCase) &&
-                parameters[0].Equals("quick", StringComparison.OrdinalIgnoreCase) && parameters[0].Equals("focus", StringComparison.OrdinalIgnoreCase) && parameters[0].Equals("self", StringComparison.OrdinalIgnoreCase))
+            else
             {
 
-                session.Network.EnqueueSend(new GameMessageSystemChat($"must specify which attribute you wish to raise. ex. /attribute STR or /attribute END or /attribute COORD or /attribute QUICK or /attribute FOCUS or /attribute SELF", ChatMessageType.Broadcast));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"must specify which attribute you wish to raise. ex. /raise STR or /raise END or /raise COORD or /raise QUICK or /raise FOCUS or /raise SELF", ChatMessageType.Broadcast));
 
             }
 
