@@ -73,247 +73,250 @@ namespace ACE.Server.Command.Handlers
         [CommandHandler("raise", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Raise attributes over max.")]
         public static void HandleAttribute(Session session, params string[] parameters)
         {
-            byte amt = 1;
-            bool max = false;
-            if (parameters.Length > 1)
+            if (parameters.Length > 0)
             {
-                if (parameters[1].Equals("max", StringComparison.OrdinalIgnoreCase))
+                byte amt = 1;
+                bool max = false;
+                if (parameters.Length > 1)
                 {
-                    max = true;
-                }
-                else
-                {
-                    if (!byte.TryParse(parameters[1], out amt))
+                    if (parameters[1].Equals("max", StringComparison.OrdinalIgnoreCase))
                     {
-                        amt = 1;
-                    }
-                }
-            }
-
-            if (parameters[0].Equals("str", StringComparison.OrdinalIgnoreCase))
-            {
-                var str = session.Player.Strength;
-
-                if (!str.IsMaxRank)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"Your Strength is not max level yet. Please raise strength until it is maxxed out. ", ChatMessageType.Broadcast));
-                    return;
-                }
-
-                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedStr, session.Player.AvailableExperience ?? 0, max);
-
-                if (session.Player.AvailableExperience < xpCost || amt == 0)
-                {
-                    if (amt > 1)
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Strength up {amt} times. ", ChatMessageType.Broadcast));
+                        max = true;
                     }
                     else
                     {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Strength up. ", ChatMessageType.Broadcast));
+                        if (!byte.TryParse(parameters[1], out amt))
+                        {
+                            amt = 1;
+                        }
                     }
+                }
+
+                if (parameters[0].Equals("str", StringComparison.OrdinalIgnoreCase))
+                {
+                    var str = session.Player.Strength;
+
+                    if (!str.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Your Strength is not max level yet. Please raise strength until it is maxxed out. ", ChatMessageType.Broadcast));
+                        return;
+                    }
+
+                    var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedStr, session.Player.AvailableExperience ?? 0, max);
+
+                    if (session.Player.AvailableExperience < xpCost || amt == 0)
+                    {
+                        if (amt > 1)
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Strength up {amt} times. ", ChatMessageType.Broadcast));
+                        }
+                        else
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Strength up. ", ChatMessageType.Broadcast));
+                        }
+                        return;
+                    }
+
+                    session.Player.RaisedStr += amt;
+                    str.StartingValue += (uint)amt;
+                    session.Player.AvailableExperience -= xpCost;
+
+
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Strength));
+
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Strength to {str.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
                     return;
                 }
 
-                session.Player.RaisedStr += amt;
-                str.StartingValue += (uint)amt;
-                session.Player.AvailableExperience -= xpCost;
+                if (parameters[0].Equals("end", StringComparison.OrdinalIgnoreCase))
+                {
+                    var end = session.Player.Endurance;
+
+                    if (!end.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Your Endurance is not max level yet. Please raise Endurance until it is maxxed out. ", ChatMessageType.Broadcast));
+                        return;
+                    }
+
+                    var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedEnd, session.Player.AvailableExperience ?? 0, max);
+
+                    if (session.Player.AvailableExperience < xpCost || amt == 0)
+                    {
+                        if (amt > 1)
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Endurance up {amt} times. ", ChatMessageType.Broadcast));
+                        }
+                        else
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Endurance up. ", ChatMessageType.Broadcast));
+                        }
+                        return;
+                    }
+
+                    session.Player.RaisedEnd += amt;
+                    end.StartingValue += (uint)amt;
+                    session.Player.AvailableExperience -= xpCost;
 
 
-                session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
-                session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Strength));
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Endurance));
 
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Strength to {str.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Endurance to {end.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
+                    return;
+                }
+
+                if (parameters[0].Equals("coord", StringComparison.OrdinalIgnoreCase))
+                {
+                    var coord = session.Player.Coordination;
+
+                    if (!coord.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Your Coordination is not max level yet. Please raise Coordination until it is maxxed out. ", ChatMessageType.Broadcast));
+                        return;
+                    }
+
+                    var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedCoord, session.Player.AvailableExperience ?? 0, max);
+
+                    if (session.Player.AvailableExperience < xpCost || amt == 0)
+                    {
+                        if (amt > 1)
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Coordination up {amt} times. ", ChatMessageType.Broadcast));
+                        }
+                        else
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Coordination up. ", ChatMessageType.Broadcast));
+                        }
+                        return;
+                    }
+
+                    session.Player.RaisedCoord += amt;
+                    coord.StartingValue += (uint)amt;
+                    session.Player.AvailableExperience -= xpCost;
+
+
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Coordination));
+
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Coordination to {coord.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
+                    return;
+                }
+
+                if (parameters[0].Equals("quick", StringComparison.OrdinalIgnoreCase))
+                {
+                    var quick = session.Player.Quickness;
+
+                    if (!quick.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Your Quickness is not max level yet. Please raise Quickness until it is maxxed out. ", ChatMessageType.Broadcast));
+                        return;
+                    }
+
+                    var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedQuick, session.Player.AvailableExperience ?? 0, max);
+
+                    if (session.Player.AvailableExperience < xpCost || amt == 0)
+                    {
+                        if (amt > 1)
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Quickness up {amt} times. ", ChatMessageType.Broadcast));
+                        }
+                        else
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Quickness up. ", ChatMessageType.Broadcast));
+                        }
+                        return;
+                    }
+
+                    session.Player.RaisedQuick += amt;
+                    quick.StartingValue += (uint)amt;
+                    session.Player.AvailableExperience -= xpCost;
+
+
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Quickness));
+
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Quickness to {quick.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
+                    return;
+                }
+
+                if (parameters[0].Equals("focus", StringComparison.OrdinalIgnoreCase))
+                {
+                    var focus = session.Player.Focus;
+
+                    if (!focus.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Your Focus is not max level yet. Please raise Focus until it is maxxed out. ", ChatMessageType.Broadcast));
+                        return;
+                    }
+
+                    var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedFocus, session.Player.AvailableExperience ?? 0, max);
+
+                    if (session.Player.AvailableExperience < xpCost || amt == 0)
+                    {
+                        if (amt > 1)
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Focus up {amt} times. ", ChatMessageType.Broadcast));
+                        }
+                        else
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Focus up. ", ChatMessageType.Broadcast));
+                        }
+                        return;
+                    }
+
+                    session.Player.RaisedFocus += amt;
+                    focus.StartingValue += (uint)amt;
+                    session.Player.AvailableExperience -= xpCost;
+
+
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Focus));
+
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Focus to {focus.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
+                    return;
+                }
+
+
+                if (parameters[0].Equals("self", StringComparison.OrdinalIgnoreCase))
+                {
+                    var self = session.Player.Self;
+
+                    if (!self.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Your Self is not max level yet. Please raise Self until it is maxxed out. ", ChatMessageType.Broadcast));
+                        return;
+                    }
+
+                    var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedSelf, session.Player.AvailableExperience ?? 0, max);
+
+                    if (session.Player.AvailableExperience < xpCost || amt == 0)
+                    {
+                        if (amt > 1)
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Self up {amt} times. ", ChatMessageType.Broadcast));
+                        }
+                        else
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Self up. ", ChatMessageType.Broadcast));
+                        }
+                        return;
+                    }
+
+                    session.Player.RaisedSelf += amt;
+                    self.StartingValue += (uint)amt;
+                    session.Player.AvailableExperience -= xpCost;
+
+
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Self));
+
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Self to {self.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
+                    return;
+                }
             }
 
-            else if (parameters[0].Equals("end", StringComparison.OrdinalIgnoreCase))
-            {
-                var end = session.Player.Endurance;
-
-                if (!end.IsMaxRank)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"Your Endurance is not max level yet. Please raise Endurance until it is maxxed out. ", ChatMessageType.Broadcast));
-                    return;
-                }
-
-                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedEnd, session.Player.AvailableExperience ?? 0, max);
-
-                if (session.Player.AvailableExperience < xpCost || amt == 0)
-                {
-                    if (amt > 1)
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Endurance up {amt} times. ", ChatMessageType.Broadcast));
-                    }
-                    else
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Endurance up. ", ChatMessageType.Broadcast));
-                    }
-                    return;
-                }
-
-                session.Player.RaisedEnd += amt;
-                end.StartingValue += (uint)amt;
-                session.Player.AvailableExperience -= xpCost;
-
-
-                session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
-                session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Endurance));
-
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Endurance to {end.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
-            }
-
-            else if (parameters[0].Equals("coord", StringComparison.OrdinalIgnoreCase))
-            {
-                var coord = session.Player.Coordination;
-
-                if (!coord.IsMaxRank)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"Your Coordination is not max level yet. Please raise Coordination until it is maxxed out. ", ChatMessageType.Broadcast));
-                    return;
-                }
-
-                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedCoord, session.Player.AvailableExperience ?? 0, max);
-
-                if (session.Player.AvailableExperience < xpCost || amt == 0)
-                {
-                    if (amt > 1)
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Coordination up {amt} times. ", ChatMessageType.Broadcast));
-                    }
-                    else
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Coordination up. ", ChatMessageType.Broadcast));
-                    }
-                    return;
-                }
-
-                session.Player.RaisedCoord += amt;
-                coord.StartingValue += (uint)amt;
-                session.Player.AvailableExperience -= xpCost;
-
-
-                session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
-                session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Coordination));
-
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Coordination to {coord.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
-            }
-
-            else if (parameters[0].Equals("quick", StringComparison.OrdinalIgnoreCase))
-            {
-                var quick = session.Player.Quickness;
-
-                if (!quick.IsMaxRank)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"Your Quickness is not max level yet. Please raise Quickness until it is maxxed out. ", ChatMessageType.Broadcast));
-                    return;
-                }
-
-                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedQuick, session.Player.AvailableExperience ?? 0, max);
-
-                if (session.Player.AvailableExperience < xpCost || amt == 0)
-                {
-                    if (amt > 1)
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Quickness up {amt} times. ", ChatMessageType.Broadcast));
-                    }
-                    else
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Quickness up. ", ChatMessageType.Broadcast));
-                    }
-                    return;
-                }
-
-                session.Player.RaisedQuick += amt;
-                quick.StartingValue += (uint)amt;
-                session.Player.AvailableExperience -= xpCost;
-
-
-                session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
-                session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Quickness));
-
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Quickness to {quick.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
-            }
-
-            else if (parameters[0].Equals("focus", StringComparison.OrdinalIgnoreCase))
-            {
-                var focus = session.Player.Focus;
-
-                if (!focus.IsMaxRank)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"Your Focus is not max level yet. Please raise Focus until it is maxxed out. ", ChatMessageType.Broadcast));
-                    return;
-                }
-
-                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedFocus, session.Player.AvailableExperience ?? 0, max);
-
-                if (session.Player.AvailableExperience < xpCost || amt == 0)
-                {
-                    if (amt > 1)
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Focus up {amt} times. ", ChatMessageType.Broadcast));
-                    }
-                    else
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Focus up. ", ChatMessageType.Broadcast));
-                    }
-                    return;
-                }
-
-                session.Player.RaisedFocus += amt;
-                focus.StartingValue += (uint)amt;
-                session.Player.AvailableExperience -= xpCost;
-
-
-                session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
-                session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Focus));
-
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Focus to {focus.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
-            }
-
-
-            else if (parameters[0].Equals("self", StringComparison.OrdinalIgnoreCase))
-            {
-                var self = session.Player.Self;
-
-                if (!self.IsMaxRank)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"Your Self is not max level yet. Please raise Self until it is maxxed out. ", ChatMessageType.Broadcast));
-                    return;
-                }
-
-                var xpCost = CalculateAttributeCost(ref amt, session.Player.RaisedSelf, session.Player.AvailableExperience ?? 0, max);
-
-                if (session.Player.AvailableExperience < xpCost || amt == 0)
-                {
-                    if (amt > 1)
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Self up {amt} times. ", ChatMessageType.Broadcast));
-                    }
-                    else
-                    {
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough available experience to level your Self up. ", ChatMessageType.Broadcast));
-                    }
-                    return;
-                }
-
-                session.Player.RaisedSelf += amt;
-                self.StartingValue += (uint)amt;
-                session.Player.AvailableExperience -= xpCost;
-
-
-                session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableExperience, session.Player.AvailableExperience ?? 0));
-                session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(session.Player, session.Player.Self));
-
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Self to {self.Base}! XP spent {xpCost:N0}", ChatMessageType.Advancement));
-            }
-
-            else
-            {
-
-                session.Network.EnqueueSend(new GameMessageSystemChat($"must specify which attribute you wish to raise. ex. /raise STR or /raise END or /raise COORD or /raise QUICK or /raise FOCUS or /raise SELF", ChatMessageType.Broadcast));
-
-            }
-
+            session.Network.EnqueueSend(new GameMessageSystemChat($"must specify which attribute you wish to raise. ex. /raise STR or /raise END or /raise COORD or /raise QUICK or /raise FOCUS or /raise SELF", ChatMessageType.Broadcast));
         }
 
         [CommandHandler("enlighten", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Raise Luminance Augs over max.")]
