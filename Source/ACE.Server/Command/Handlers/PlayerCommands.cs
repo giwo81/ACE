@@ -48,19 +48,19 @@ namespace ACE.Server.Command.Handlers
                 return;
         }
 
-        private static long CalculateAttributeCost(ref int amt, int currentAmt, long availableXp, bool max)
+        private static long CalculateAttributeCost(ref byte amt, int currentAmt, long availableXp, bool max)
         {
             ulong maxLong = 9223372036854775807;
             ulong attrcost;
             ulong multiamount = 0UL;
             var attrCostEthereal = currentAmt;
 
-            for (var i = 1; i <= amt || max; i++)
+            for (byte i = 1; i <= amt || max; i++)
             {
                 attrcost = (ulong)Math.Round(500000000D * Math.Pow((1D + (attrCostEthereal / 125D)), 3D));
                 if (((multiamount + attrcost) > maxLong) || (max && (long)(multiamount + attrcost) > availableXp))
                 {
-                    amt = i - 1;
+                    amt = (byte)(i - 1);
                     break;
                 }
 
@@ -73,7 +73,7 @@ namespace ACE.Server.Command.Handlers
         [CommandHandler("raise", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Raise attributes over max.")]
         public static void HandleAttribute(Session session, params string[] parameters)
         {
-            var amt = 1;
+            byte amt = 1;
             bool max = false;
             if (parameters.Length > 1)
             {
@@ -83,7 +83,10 @@ namespace ACE.Server.Command.Handlers
                 }
                 else
                 {
-                    int.TryParse(parameters[1], out amt);
+                    if (!byte.TryParse(parameters[1], out amt))
+                    {
+                        amt = 1;
+                    }
                 }
             }
 
@@ -318,6 +321,15 @@ namespace ACE.Server.Command.Handlers
         {
             if (parameters.Length > 0)
             {
+                byte amt = 1;
+                if (parameters.Length > 1)
+                {
+                    if (!byte.TryParse(parameters[1], out amt))
+                    {
+                        amt = 1;
+                    }
+                }
+
                 if (parameters[0].Equals("Defense", StringComparison.OrdinalIgnoreCase) || parameters[0].Equals("DRR", StringComparison.OrdinalIgnoreCase))
                 {
                     var drr = session.Player.LumAugDamageReductionRating;
@@ -327,10 +339,11 @@ namespace ACE.Server.Command.Handlers
                     // session.Network.EnqueueSend(new GameMessageSystemChat($"You do not yet have 5 Defense Luminance Augs, please raise your Defense Rating at Asheron's Castle first.", ChatMessageType.Broadcast));
                     // return;
                     // }
-                    var lumCost = 15000000;
+                    var lumPerPoint = 15000000;
+                    var lumCost = lumPerPoint * amt;
                     if (session.Player.SpendLuminance(lumCost))
                     {
-                        var newDRR = drr + 1;
+                        var newDRR = drr + (int)amt;
                         session.Player.UpdateProperty(session.Player, PropertyInt.LumAugDamageReductionRating, newDRR);
                         session.Player.EnqueueBroadcast(false, new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.LumAugDamageReductionRating, Convert.ToInt32(newDRR)));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Defense Rating to {newDRR}! Luminance spent {lumCost:N0}", ChatMessageType.Advancement));
@@ -351,10 +364,11 @@ namespace ACE.Server.Command.Handlers
                     // session.Network.EnqueueSend(new GameMessageSystemChat($"You do not yet have 5 Damage Luminance Augs, please raise your Damage Rating at Asheron's Castle first.", ChatMessageType.Broadcast));
                     // return;
                     // }
-                    var lumCost = 15000000;
+                    var lumPerPoint = 15000000;
+                    var lumCost = lumPerPoint * amt;
                     if (session.Player.SpendLuminance(lumCost))
                     {
-                        var newDR = dr + 1;
+                        var newDR = dr + (int)amt;
                         session.Player.UpdateProperty(session.Player, PropertyInt.LumAugDamageRating, newDR);
                         session.Player.EnqueueBroadcast(false, new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.LumAugDamageRating, Convert.ToInt32(newDR)));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Damage Rating to {newDR}! Luminance spent {lumCost:N0}", ChatMessageType.Advancement));
@@ -375,13 +389,14 @@ namespace ACE.Server.Command.Handlers
                     // session.Network.EnqueueSend(new GameMessageSystemChat($"You do not yet have 10 World Luminance Augs, please raise your Skills at Asheron's Castle first.", ChatMessageType.Broadcast));
                     // return;
                     // }
-                    var lumCost = 5000000;
+                    var lumPerPoint = 5000000;
+                    var lumCost = lumPerPoint * amt;
                     if (session.Player.SpendLuminance(lumCost))
                     {
-                        var newWorld = world + 1;
+                        var newWorld = world + (int)amt;
                         session.Player.UpdateProperty(session.Player, PropertyInt.LumAugAllSkills, newWorld);
                         session.Player.EnqueueBroadcast(false, new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.LumAugAllSkills, Convert.ToInt32(newWorld)));
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased all your skills by 1! Luminance spent {lumCost:N0}", ChatMessageType.Advancement));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased all your skills by {amt:N0}! Luminance spent {lumCost:N0}", ChatMessageType.Advancement));
                     }
                     else
                     {
@@ -394,13 +409,14 @@ namespace ACE.Server.Command.Handlers
                 {
                     var health = session.Player.Health;
 
-                    var lumCost = 7500000;
+                    var lumPerPoint = 7500000;
+                    var lumCost = lumPerPoint * amt;
                     if (session.Player.SpendLuminance(lumCost))
                     {
-                        health.StartingValue += 1;
+                        health.StartingValue += amt;
                         session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(session.Player, health));
 
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Vitality By 1! Luminance spent {lumCost:N0}", ChatMessageType.Advancement));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have increased your Vitality By {amt:N0}! Luminance spent {lumCost:N0}", ChatMessageType.Advancement));
                     }
                     else
                     {
