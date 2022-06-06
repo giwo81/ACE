@@ -191,7 +191,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         SkillTemplesTimerReset           = 9009,
         [ServerOnly]
-        CombatPetUpgraded                = 9010,
+        FreeMasteryResetRenewed          = 9010,
+        [ServerOnly]
+        CombatPetUpgraded                = 18001,
     }
 
     public static class PropertyBoolExtensions
