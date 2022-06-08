@@ -294,7 +294,17 @@ namespace ACE.Server.Managers
             1.0f,   // 7
             1.0f,   // 8
             1.0f,   // 9
-            1.0f    // 10
+            1.0f,   // 10
+            1.0f,   // 11
+            1.0f,   // 12
+            1.0f,   // 13
+            1.0f,   // 14
+            1.0f,   // 15
+            1.0f,   // 16
+            1.0f,   // 17
+            1.0f,   // 18
+            1.0f,   // 19
+            1.0f    // 20
         };
 
         public static void ShowDialog(Player player, WorldObject source, WorldObject target, Recipe recipe, double successChance)
