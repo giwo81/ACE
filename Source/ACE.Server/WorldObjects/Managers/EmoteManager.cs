@@ -145,7 +145,7 @@ namespace ACE.Server.WorldObjects.Managers
                 case EmoteType.AwardLuminance:
 
                     if (player != null)
-                        player.EarnLuminance(emote.Amount64 ?? emote.HeroXP64 ?? 0, XpType.Quest, ShareType.None);
+                        player.EarnLuminance(emote.Amount64 ?? emote.HeroXP64 ?? 0, XpType.Quest, ShareType.Fellowship);
 
                     break;
 
